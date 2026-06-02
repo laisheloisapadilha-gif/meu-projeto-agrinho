@@ -1,38 +1,178 @@
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Projeto Agrinho</title>
-</head>
-<body>
-</h1> Sob o Céu do Agro,planeta saúdavel!</h1>
-<p>É com prazer que os recebo, onde compartilharei minhas narrativas.</p>
-<h2><!DOCTYPE html>
-<html lang="pt-BR">
-<head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agro Forte - Planeta Sustentável</title>
+    <title>Planeta Sustentável, Agro Forte</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Agro Forte 🌱 - Planeta Sustentável 🌍</h1>
+    <div class="container">
+        <h1>Planeta Sustentável, Agro Forte</h1>
+        <div id="game">
+            <div id="info">
+                <p>Pontuação: <span id="score">0</span></p>
+                <p>Saúde do Planeta: <span id="planetHealth">100</span>%</p>
+            </div>
 
-    <div id="game">
-        <p>Produtividade: <span id="produtividade">50</span>%</p>
-        <p>Saúde do planeta: <span id="planeta">50</span>%</p>
+            <div id="question-container" class="hide">
+                <p id="question"></p>
+                <div id="answer-buttons" class="btn-grid"></div>
+            </div>
 
-        <button onclick="usarFertilizante()">Usar fertilizante</button>
-        <button onclick="plantarArvore()">Plantar árvore</button>
-        <button onclick="economizarAgua()">Economizar água</button>
+            <button id="start-btn" class="btn">Começar Jogo</button>
+        </div>
     </div>
-
-    <p id="mensagem"></p>
-
     <script src="script.js"></script>
 </body>
-</body>
-</html>
+</html> body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(to bottom, #a8e6cf, #dcedc1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.container {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 20px 40px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+}
+
+.btn {
+    padding: 10px 20px;
+    margin: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    background-color: #4CAF50;
+    color: white;
+    transition: background 0.3s;
+}
+
+.btn:hover {
+    background-color: #45a049;
+}
+
+.btn-grid {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    gap: 10px;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.hide {
+    display: none;
+} const startButton = document.getElementById('start-btn');
+const questionContainer = document.getElementById('question-container');
+const questionElement = document.getElementById('question');
+const answerButtons = document.getElementById('answer-buttons');
+const scoreElement = document.getElementById('score');
+const planetHealthElement = document.getElementById('planetHealth');
+
+let score = 0;
+let planetHealth = 100;
+let currentQuestionIndex = 0;
+
+const questions = [
+    {
+        question: "Qual prática ajuda a conservar a água na agricultura?",
+        answers: [
+            { text: "Irrigar apenas quando necessário", correct: true },
+            { text: "Inundar campos diariamente", correct: false },
+            { text: "Deixar a água correr sem controle", correct: false },
+            { text: "Usar água potável para tudo", correct: false }
+        ]
+    },
+    {
+        question: "Qual fonte de energia é mais sustentável para uma fazenda?",
+        answers: [
+            { text: "Painéis solares", correct: true },
+            { text: "Carvão", correct: false },
+            { text: "Diesel", correct: false },
+            { text: "Lenha não controlada", correct: false }
+        ]
+    },
+    {
+        question: "Como reduzir o impacto ambiental do solo?",
+        answers: [
+            { text: "Rotação de culturas", correct: true },
+            { text: "Uso constante do mesmo solo", correct: false },
+            { text: "Desmatamento para novas áreas", correct: false },
+            { text: "Poluição com produtos químicos", correct: false }
+        ]
+    },
+];
+
+startButton.addEventListener('click', startGame);
+
+function startGame() {
+    startButton.classList.add('hide');
+    questionContainer.classList.remove('hide');
+    currentQuestionIndex = 0;
+    score = 0;
+    planetHealth = 100;
+    scoreElement.innerText = score;
+    planetHealthElement.innerText = planetHealth;
+    showQuestion();
+}
+
+function showQuestion() {
+    resetState();
+    const question = questions[currentQuestionIndex];
+    questionElement.innerText = question.question;
+    question.answers.forEach(answer => {
+        const button = document.createElement('button');
+        button.innerText = answer.text;
+        button.classList.add('btn');
+        if (answer.correct) {
+            button.dataset.correct = answer.correct;
+        }
+        button.addEventListener('click', selectAnswer);
+        answerButtons.appendChild(button);
+    });
+}
+
+function resetState() {
+    while (answerButtons.firstChild) {
+        answerButtons.removeChild(answerButtons.firstChild);
+    }
+}
+
+function selectAnswer(e) {
+    const selectedButton = e.target;
+    const correct = selectedButton.dataset.correct === "true";
+
+    if (correct) {
+        score += 10;
+        planetHealth += 5;
+        if (planetHealth > 100) planetHealth = 100;
+    } else {
+        score -= 5;
+        planetHealth -= 10;
+        if (planetHealth < 0) planetHealth = 0;
+    }
+
+    scoreElement.innerText = score;
+    planetHealthElement.innerText = planetHealth;
+
+    currentQuestionIndex++;
+    if (currentQuestionIndex < questions.length) {
+        showQuestion();
+    } else {
+        endGame();
+    }
+}
+
+function endGame() {
+    questionContainer.classList.add('hide');
+    startButton.innerText = "Recomeçar Jogo";
+    startButton.classList.remove('hide');
+    alert(`Fim do jogo!\nPontuação: ${score}\nSaúde do Planeta: ${planetHealth}%`);
+}
 
