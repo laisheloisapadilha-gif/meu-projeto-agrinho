@@ -1,115 +1,258 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agro Forte - Planeta Sustentável</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #e0f7fa;
-            color: #00695c;
-            text-align: center;
-            padding: 20px;
-        }
-        h1 {
-            color: #004d40;
-        }
-        button {
-            padding: 10px 20px;
-            margin: 10px;
-            font-size: 16px;
-            cursor: pointer;
-            border: none;
-            background-color: #26a69a;
-            color: white;
-            border-radius: 5px;
-        }
-        button:hover {
-            background-color: #00796b;
-        }
-        #quiz-container {
-            margin-top: 30px;
-        }
-        #question {
-            font-size: 20px;
-            margin-bottom: 20px;
-        }
-        #score {
-            margin-top: 20px;
-            font-size: 18px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agro Forte - Planeta Sustentável</title>
+<style>
+body {
+    margin:0;
+    padding:0;
+    overflow:hidden;
+    font-family: Arial, sans-serif;
+    background-color: #87CEEB; /* Céu azul */
+}
+canvas {
+    display:block;
+    margin:0 auto;
+    border:5px solid #4caf50;
+    border-radius:15px;
+    background: #7ec850; /* Grama */
+}
+#info {
+    text-align:center;
+    font-size:20px;
+    color:#fff;
+    margin-top:10px;
+}
+#startScreen {
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.5);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+    color:white;
+    font-size:28px;
+    z-index:10;
+}
+button {
+    font-size:20px;
+    padding:10px 20px;
+    margin-top:20px;
+    cursor:pointer;
+    border:none;
+    border-radius:10px;
+    background:#4caf50;
+    color:white;
+}
+button:hover {background:#388e3c;}
+</style>
 </head>
 <body>
 
-    <h1>Agro Forte - Planeta Sustentável</h1>
-    <p>Responda às perguntas e aprenda como proteger nosso planeta!</p>
+<div id="startScreen">
+    <div>🌱 Agro Forte - Planeta Sustentável 🌎</div>
+    <button id="startBtn">Iniciar Jogo</button>
+</div>
 
-    <div id="quiz-container">
-        <div id="question"></div>
-        <div id="answers"></div>
-    </div>
+<canvas id="gameCanvas" width="800" height="500"></canvas>
+<div id="info">Pontuação: <span id="score">0</span> | Árvores: <span id="trees">0</span></div>
 
-    <div id="score"></div>
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+const width = canvas.width;
+const height = canvas.height;
 
-    <script>
-        const quiz = [
-            {
-                question: "Qual prática ajuda a preservar o solo na agricultura?",
-                answers: ["Desmatamento", "Rotação de culturas", "Queimadas", "Uso excessivo de pesticidas"],
-                correct: 1
-            },
-            {
-                question: "Qual é uma fonte de energia renovável?",
-                answers: ["Carvão", "Petróleo", "Solar", "Gás natural"],
-                correct: 2
-            },
-            {
-                question: "O que significa 'agricultura sustentável'?",
-                answers: [
-                    "Produzir alimentos sem esgotar recursos naturais",
-                    "Usar produtos químicos para aumentar produção",
-                    "Cortar todas as árvores da fazenda",
-                    "Plantar apenas uma cultura o ano todo"
-                ],
-                correct: 0
-            }
-        ];
+// Estado do jogo
+let gameStarted = false;
 
-        let currentQuestion = 0;
-        let score = 0;
+// Jogador
+const player = {
+    x: 50,
+    y: 400,
+    width: 40,
+    height: 60,
+    speed: 5,
+    color: "#ffcc00"
+};
 
-        function showQuestion() {
-            if(currentQuestion < quiz.length){
-                document.getElementById("question").textContent = quiz[currentQuestion].question;
-                const answersDiv = document.getElementById("answers");
-                answersDiv.innerHTML = "";
-                quiz[currentQuestion].answers.forEach((answer, index) => {
-                    const btn = document.createElement("button");
-                    btn.textContent = answer;
-                    btn.onclick = () => checkAnswer(index);
-                    answersDiv.appendChild(btn);
-                });
-            } else {
-                document.getElementById("quiz-container").style.display = "none";
-                document.getElementById("score").textContent = `Parabéns! Você acertou ${score} de ${quiz.length} perguntas.`;
-            }
+// Objetos
+let waterDrops = [];
+let plants = [];
+let trees = [];
+let clouds = [];
+let birds = [];
+let score = 0;
+
+// Controles
+const keys = {};
+document.addEventListener("keydown", e => keys[e.key] = true);
+document.addEventListener("keyup", e => keys[e.key] = false);
+
+// Tela inicial
+document.getElementById("startBtn").addEventListener("click", () => {
+    document.getElementById("startScreen").style.display = "none";
+    gameStarted = true;
+    init();
+});
+
+// Funções auxiliares
+function rand(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+
+// Inicialização
+function init(){
+    // Criar nuvens
+    for(let i=0;i<5;i++){
+        clouds.push({x:rand(0,width),y:rand(20,100),size:rand(50,120),speed:0.2+Math.random()});
+    }
+    // Criar passarinhos
+    for(let i=0;i<3;i++){
+        birds.push({x:rand(0,width),y:rand(50,150),speed:1+Math.random()*1.5});
+    }
+    gameLoop();
+}
+
+// Spawn gotas
+function spawnWater(){
+    if(waterDrops.length < 5){
+        waterDrops.push({
+            x: rand(50,width-50),
+            y: 0,
+            size:20,
+            speed:2 + Math.random()*2
+        });
+    }
+}
+
+// Atualizar objetos
+function update(){
+    // Movimentação do jogador
+    if(keys["ArrowLeft"] && player.x>0) player.x -= player.speed;
+    if(keys["ArrowRight"] && player.x<width-player.width) player.x += player.speed;
+    if(keys["ArrowUp"] && player.y>0) player.y -= player.speed;
+    if(keys["ArrowDown"] && player.y<height-player.height) player.y += player.speed;
+
+    // Atualizar gotas
+    for(let i=waterDrops.length-1;i>=0;i--){
+        let w = waterDrops[i];
+        w.y += w.speed;
+        // Colisão
+        if(player.x < w.x+w.size && player.x+player.width > w.x &&
+           player.y < w.y+w.size && player.y+player.height > w.y){
+            score += 10;
+            document.getElementById("score").textContent = score;
+            plants.push({x:rand(50,width-50),y:height-20,stage:1});
+            waterDrops.splice(i,1);
+        } else if(w.y > height) waterDrops.splice(i,1);
+    }
+
+    // Crescimento das plantas
+    for(let i=plants.length-1;i>=0;i--){
+        let p = plants[i];
+        if(p.stage<5){
+            p.stage += 0.02; // Crescimento animado
+        } else {
+            trees.push(p);
+            plants.splice(i,1);
         }
+    }
 
-        function checkAnswer(selected) {
-            if(selected === quiz[currentQuestion].correct){
-                score++;
-                alert("Correto! 🌱");
-            } else {
-                alert("Errado! Tente a próxima.");
-            }
-            currentQuestion++;
-            showQuestion();
-        }
+    // Nuvens se movendo
+    for(let c of clouds){
+        c.x += c.speed;
+        if(c.x > width+50) c.x = -100;
+    }
 
-        showQuestion();
-    </script>
+    // Passarinhos se movendo
+    for(let b of birds){
+        b.x += b.speed;
+        if(b.x > width+20) b.x = -50;
+    }
+}
 
+// Desenhar objetos
+function draw(){
+    // Céu
+    ctx.fillStyle = "#87CEEB";
+    ctx.fillRect(0,0,width,height);
+
+    // Nuvens
+    for(let c of clouds){
+        ctx.fillStyle = "#fff";
+        ctx.beginPath();
+        ctx.arc(c.x,c.y,c.size*0.5,0,2*Math.PI);
+        ctx.arc(c.x+c.size*0.4,c.y+10,c.size*0.4,0,2*Math.PI);
+        ctx.arc(c.x-c.size*0.4,c.y+5,c.size*0.3,0,2*Math.PI);
+        ctx.fill();
+    }
+
+    // Sol
+    ctx.beginPath();
+    ctx.arc(700,80,50,0,2*Math.PI);
+    ctx.fillStyle="#FFD700";
+    ctx.fill();
+
+    // Passarinhos
+    for(let b of birds){
+        ctx.fillStyle="#FF0000";
+        ctx.beginPath();
+        ctx.moveTo(b.x,b.y);
+        ctx.lineTo(b.x-10,b.y+5);
+        ctx.lineTo(b.x-10,b.y-5);
+        ctx.fill();
+    }
+
+    // Grama
+    ctx.fillStyle = "#7ec850";
+    ctx.fillRect(0,height-50,width,50);
+
+    // Jogador
+    ctx.fillStyle = player.color;
+    ctx.fillRect(player.x,player.y,player.width,player.height);
+    ctx.font = "30px Arial";
+    ctx.fillText("👨‍🌾", player.x-5, player.y+40);
+
+    // Gotas de água
+    for(let w of waterDrops){
+        ctx.beginPath();
+        ctx.arc(w.x,w.y,w.size/2,0,2*Math.PI);
+        ctx.fillStyle="#00bfff";
+        ctx.fill();
+    }
+
+    // Plantas animadas
+    for(let p of plants){
+        ctx.fillStyle="#2e7d32";
+        ctx.fillRect(p.x,height-20,10,-p.stage*20);
+    }
+
+    // Árvores animadas
+    for(let t of trees){
+        ctx.fillStyle="#8b4513";
+        ctx.fillRect(t.x,height-40,15,-40);
+        ctx.beginPath();
+        ctx.arc(t.x+7,height-40-20,20,0,2*Math.PI);
+        ctx.fillStyle="#228B22";
+        ctx.fill();
+    }
+}
+
+// Loop principal
+function gameLoop(){
+    if(!gameStarted) return;
+    spawnWater();
+    update();
+    draw();
+    document.getElementById("trees").textContent = trees.length;
+    requestAnimationFrame(gameLoop);
+}
+
+</script>
 </body>
 </html>
