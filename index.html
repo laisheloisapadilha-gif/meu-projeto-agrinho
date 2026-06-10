@@ -1,29 +1,115 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Planeta Sustentável, Agro Forte</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agro Forte - Planeta Sustentável</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e0f7fa;
+            color: #00695c;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            color: #004d40;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            background-color: #26a69a;
+            color: white;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #00796b;
+        }
+        #quiz-container {
+            margin-top: 30px;
+        }
+        #question {
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+        #score {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Planeta Sustentável, Agro Forte</h1>
-        <div id="game">
-            <div id="info">
-                <p>Pontuação: <span id="score">0</span></p>
-                <p>Saúde do Planeta: <span id="planetHealth">100</span>%</p>
-            </div>
 
-            <div id="question-container" class="hide">
-                <p id="question"></p>
-                <div id="answer-buttons" class="btn-grid"></div>
-            </div>
+    <h1>Agro Forte - Planeta Sustentável</h1>
+    <p>Responda às perguntas e aprenda como proteger nosso planeta!</p>
 
-            <button id="start-btn" class="btn">Começar Jogo</button>
-        </div>
+    <div id="quiz-container">
+        <div id="question"></div>
+        <div id="answers"></div>
     </div>
-    <script src="script.js"></script>
+
+    <div id="score"></div>
+
+    <script>
+        const quiz = [
+            {
+                question: "Qual prática ajuda a preservar o solo na agricultura?",
+                answers: ["Desmatamento", "Rotação de culturas", "Queimadas", "Uso excessivo de pesticidas"],
+                correct: 1
+            },
+            {
+                question: "Qual é uma fonte de energia renovável?",
+                answers: ["Carvão", "Petróleo", "Solar", "Gás natural"],
+                correct: 2
+            },
+            {
+                question: "O que significa 'agricultura sustentável'?",
+                answers: [
+                    "Produzir alimentos sem esgotar recursos naturais",
+                    "Usar produtos químicos para aumentar produção",
+                    "Cortar todas as árvores da fazenda",
+                    "Plantar apenas uma cultura o ano todo"
+                ],
+                correct: 0
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+
+        function showQuestion() {
+            if(currentQuestion < quiz.length){
+                document.getElementById("question").textContent = quiz[currentQuestion].question;
+                const answersDiv = document.getElementById("answers");
+                answersDiv.innerHTML = "";
+                quiz[currentQuestion].answers.forEach((answer, index) => {
+                    const btn = document.createElement("button");
+                    btn.textContent = answer;
+                    btn.onclick = () => checkAnswer(index);
+                    answersDiv.appendChild(btn);
+                });
+            } else {
+                document.getElementById("quiz-container").style.display = "none";
+                document.getElementById("score").textContent = `Parabéns! Você acertou ${score} de ${quiz.length} perguntas.`;
+            }
+        }
+
+        function checkAnswer(selected) {
+            if(selected === quiz[currentQuestion].correct){
+                score++;
+                alert("Correto! 🌱");
+            } else {
+                alert("Errado! Tente a próxima.");
+            }
+            currentQuestion++;
+            showQuestion();
+        }
+
+        showQuestion();
+    </script>
+
 </body>
-</html> body 
-   
-  
+</html>
